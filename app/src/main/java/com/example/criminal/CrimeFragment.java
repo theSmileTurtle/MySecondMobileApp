@@ -23,8 +23,8 @@ import java.util.UUID;
 
 public class CrimeFragment extends Fragment {
     private final String TAG = "CrimeFragment";
-    private static final String DIALOG_DATE = "DialogDate";
-    private static final int REQUEST_DATE = 0;
+    private static final String DIALOG_DATE = "DialogDate"; // тег для связи с выбором даты
+    private static final int REQUEST_DATE = 0; // ожидаемый результат от диалогового окна
 
     private Crime mCrime;
     private EditText mTitleField;
@@ -35,6 +35,7 @@ public class CrimeFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // получение идентификатора преступления, которое надо отобразить
         UUID crimeId = (UUID) getActivity().getIntent().getSerializableExtra(CrimeActivity.EXTRA_CRIME_ID);
         mCrime = CrimeLab.get(getActivity()).getCrime(crimeId);
 
@@ -43,12 +44,14 @@ public class CrimeFragment extends Fragment {
         else Log.d(TAG, "mCrime is null");
     }
 
+    // при закрытии активности мы обновляям бд преступлений
     @Override
     public void onPause() {
         super.onPause();
         CrimeLab.get(getActivity()).updateCrime(mCrime);
     }
 
+    // отрисовка элементов фрагмента
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -56,6 +59,7 @@ public class CrimeFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_crime,
                 container, false);
 
+        // отображение текста названия преступления
         mTitleField = (EditText) v.findViewById(R.id.crime_title);
         mTitleField.setText(mCrime.getmTitle());
         mTitleField.addTextChangedListener(new TextWatcher() {
@@ -75,6 +79,7 @@ public class CrimeFragment extends Fragment {
             }
         });
 
+        // отображение даты преступления
         mDateButton = (Button) v.findViewById(R.id.crime_date);
         mDateButton.setText(mCrime.getmDate().toString());
         mDateButton.setOnClickListener(new View.OnClickListener() {
@@ -87,6 +92,7 @@ public class CrimeFragment extends Fragment {
             }
         });
 
+        // отображение флага решенности преступления
         mSolvedCheckBox = (CheckBox) v.findViewById(R.id.crime_solved);
         mSolvedCheckBox.setChecked(mCrime.ismSolved());
         mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -99,6 +105,7 @@ public class CrimeFragment extends Fragment {
         return v;
     }
 
+    // получаем данные из диалога с выбором даты
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         //super.onActivityResult();
@@ -106,13 +113,11 @@ public class CrimeFragment extends Fragment {
         if(resultCode!= Activity.RESULT_OK) {
             return;
         }
-        if(requestCode == REQUEST_DATE) {
+        if(requestCode == REQUEST_DATE) { // если результат от календаря
             Date date = (Date) data
                     .getSerializableExtra(DatePickerFragment.EXTRA_DATE);
             mCrime.setmDate(date);
             mDateButton.setText(mCrime.getmDate().toString());
         }
     }
-
-
 }

@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+// singleton-класс
 public class CrimeLab {
     private final String TAG = "CrimeLab";
     private static CrimeLab sCrimeLab;
@@ -23,6 +24,15 @@ public class CrimeLab {
     private SQLiteDatabase mDataBase;
     private Cursor cursor;
 
+    //Закрытый конструктор CrimeLab. Другие классы не
+    //смогут создать экземпляр CrimeLab в обход метода get()
+    private CrimeLab(Context context) {
+        // создание базы для хранения преступлений
+        mContext = context.getApplicationContext();
+        mDataBase = new CrimeBaseHelper(mContext).getWritableDatabase();
+    }
+
+   // геттер для создания или получения
     public static CrimeLab get(Context context) {
         if(sCrimeLab==null) {
             sCrimeLab = new CrimeLab(context);
@@ -30,12 +40,14 @@ public class CrimeLab {
         return sCrimeLab;
     }
 
+    // добавление нового преступления в бд
     public void addCrime(Crime c) {
         //mCrimes.add(c);
         ContentValues values = getContentValues(c);
         mDataBase.insert(CrimeDbSchema.CrimeTable.NAME, null, values);
     }
 
+    // обновление преступления в бд
     public void updateCrime(Crime crime) {
         String uuidString = crime.getmId().toString();
         ContentValues values = getContentValues(crime);
@@ -44,6 +56,7 @@ public class CrimeLab {
                 new String[] {uuidString});
     }
 
+    // запрос для получения всех преступлений из бд
     private Cursor queryCrimes(String whereClause,
                                String[] whereArgs) {
         cursor = mDataBase.query(
@@ -58,20 +71,7 @@ public class CrimeLab {
         return cursor;
     }
 
-    private CrimeLab(Context context) {
-        mContext = context.getApplicationContext();
-        mDataBase = new CrimeBaseHelper(mContext).getWritableDatabase();
-
-        //mCrimes = new ArrayList<>();
-
-//        for(int i=0; i<100; i++) {
-//            Crime crime = new Crime();
-//            crime.setmTitle("Crime #" + i);
-//            crime.setmSolved(i%3 == 0);
-//            mCrimes.add(crime);
-//        }
-    }
-
+    // как я понял это получение преступления из текущей позиции курсора
     public Crime getCrime() {
         String uuidString = cursor.getString(
                 cursor.getColumnIndex(CrimeDbSchema.CrimeTable.Cols.UUID));
@@ -89,6 +89,7 @@ public class CrimeLab {
         return crime;
     }
 
+    // получение преступлений в виде списка
     public List<Crime> getmCrimes() {
         //return mCrimes;
 
@@ -106,6 +107,7 @@ public class CrimeLab {
         return crimes;
     }
 
+    // получение преступления по идентификатору
     public Crime getCrime(UUID id) {
         cursor = queryCrimes(
                 CrimeDbSchema.CrimeTable.Cols.UUID + " = ?",
@@ -131,6 +133,7 @@ public class CrimeLab {
 //        return null;
     }
 
+    // это вроде обновление бд
     private static ContentValues getContentValues(Crime crime) {
         ContentValues values = new ContentValues();
         values.put(CrimeDbSchema.CrimeTable.Cols.UUID, crime.getmId().toString());

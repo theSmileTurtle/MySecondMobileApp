@@ -17,12 +17,14 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.zip.Inflater;
 
+// диалоговый фрагмент с календарем для выбора даты
 public class DatePickerFragment extends DialogFragment {
 
-    private static final String ARG_DATE = "date";
+    private static final String ARG_DATE = "date"; // имя аргумента даты
     public static final String EXTRA_DATE = "com.example.Criminal.date";
     private DatePicker mDatePicker;
 
+    //
     public static DatePickerFragment newInstance(Date date) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_DATE, date);
@@ -42,17 +44,18 @@ public class DatePickerFragment extends DialogFragment {
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
+        // заполнение из макета с виджетом даты
         View v = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_date, null);
 
         mDatePicker = (DatePicker) v.findViewById(R.id.dialog_date_picker);
-        mDatePicker.init(year, month, day, null);
+        mDatePicker.init(year, month, day, null); // установка сегодняшней даты
 
         return new AlertDialog.Builder(getActivity())
-                .setView(v)
-                .setTitle(R.string.date_picker_title)
-                .setPositiveButton(android.R.string.ok,
-                        new DialogInterface.OnClickListener() {
-                            @Override
+                .setView(v) // установка диалогу загруженного представления
+                .setTitle(R.string.date_picker_title) // заголовок диалога
+                .setPositiveButton(android.R.string.ok, // кнопка ок в диалоге
+                        new DialogInterface.OnClickListener() { // обработка нажатия на кнопку
+                            @Override // отправка выбраной даты
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 int year = mDatePicker.getYear();
                                 int month = mDatePicker.getMonth();
@@ -64,14 +67,14 @@ public class DatePickerFragment extends DialogFragment {
                 .create();
     }
 
+    //метод для отправки даты через интент
     private void sendResult(int resultCode, Date date) {
         if(getTargetFragment() == null) {
             return;
         }
         Intent intent = new Intent();
-        intent.putExtra(EXTRA_DATE, date);
+        intent.putExtra(EXTRA_DATE, date); // ключ - значение
         getTargetFragment().onActivityResult(getTargetRequestCode(),
                 resultCode, intent);
     }
-
 }
