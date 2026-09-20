@@ -3,6 +3,9 @@ package com.example.criminal;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -10,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,6 +37,54 @@ public class CrimeListFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.fragment_crime_list, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId()==R.id.new_crime) {
+            Crime crime = new Crime();
+            CrimeLab.get(getActivity()).addCrime(crime);
+            Intent intent = CrimeActivity.newIntent(getActivity(), crime.getmId());
+            startActivity(intent);
+            return true;
+        }
+        else if(item.getItemId()==R.id.show_subtitle) {
+            updateSubtitle();
+            return true;
+        }
+        else {
+            return super.onOptionsItemSelected(item);
+        }
+//        switch (item.getItemId()) {
+//            case R.id.new_crime:
+//                Crime crime = new Crime();
+//                CrimeLab.get(getActivity()).addCrime(crime);
+//                Intent intent = CrimeActivity.newIntent(getActivity(), crime.getmId());
+//                startActivity(intent);
+//                return true;
+//
+//            default: return super.onOptionsItemSelected(item);
+//        }
+    }
+
+    private void updateSubtitle() {
+        CrimeLab crL = CrimeLab.get(getActivity());
+        int crimeCount = crL.getmCrimes().size();
+        String subtitle = getString(R.string.subtitle_format, crimeCount);
+        AppCompatActivity activity = (AppCompatActivity) getActivity();
+        activity.getSupportActionBar().setSubtitle(subtitle);
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         updateUI();
@@ -45,8 +97,12 @@ public class CrimeListFragment extends Fragment {
             mAdapter = new CrimeAdapter(crimes);
             mCrimeRecyclerView.setAdapter(mAdapter);
         }
-        else mAdapter.notifyDataSetChanged();
+        else  {
+            mAdapter.setCrimes(crimes);
+            mAdapter.notifyDataSetChanged();
+        }
 
+        //updateSubtitle();
     }
 
     private class CrimeHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -101,6 +157,10 @@ public class CrimeListFragment extends Fragment {
         @Override
         public int getItemCount() {
             return mCrimes.size();
+        }
+
+        public void setCrimes(List<Crime> crimes) {
+            mCrimes = crimes;
         }
     }
 }
